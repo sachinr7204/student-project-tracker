@@ -1,21 +1,10 @@
+import { createApp } from './app.js';
+import { db } from './database.js';
 
-import express from 'express';
-
-const app = express();
-
-// Parse incoming JSON request bodies (maximum 10 KB)
-app.use(express.json({ limit: '10kb' }));
-
-// Keep serving the existing frontend from the public folder
-app.use(express.static('public'));
-
-// Health-check route
-app.get('/api/health', (req, res) => {
-    res.json({ ok: true });
-});
+const app = createApp(db);
 
 const port = Number(process.env.PORT || 3000);
 
 app.listen(port, () => {
-    console.log(`Open http://localhost:${port}`);
+    console.log('Student Project Tracker running at http://localhost:' + port);
 });
