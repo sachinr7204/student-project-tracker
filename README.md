@@ -1,27 +1,82 @@
-# Student Project Tracker - Setup smoke test
+# Student Project Tracker
 
-Workshop learning checkpoint. Local demo; no login or multi-user isolation.
+A hands-on web app development workshop project for adding, viewing, editing, and deleting engineering projects. Project records are stored in a local SQLite database.
 
-## Run
-Use Node.js 22.23.3 (tested baseline) and a PowerShell terminal in this folder.
+## Run Locally
+
+### Requirements
+
+- Node.js 22.18 or later, but below version 23, for the workshop's specified baseline
+- Git
+- Visual Studio Code
+
+### Installation and startup
+
+Open a PowerShell terminal in the project folder and run:
 
 ```powershell
-npm.cmd install
+npm.cmd ci
 npm.cmd start
 ```
 
-Open http://localhost:3000. Keep the server terminal running. Stop with Ctrl+C.
-The pinned versions and lockfile are supplied in the released kit. After the first install, use `npm.cmd ci` when restoring dependencies.
+Open the application in your browser:
 
-## Files
-`public/index.html`: structure; `public/style.css`: presentation; `public/script.js`: browser behaviour.
-`server.js`: local startup. When present, `app.js`: HTTP API; `database.js`: persistence.
+http://localhost:3000
 
-## Evidence
-Explain the current storage location and what survives browser refresh and server restart.
-For the final checkpoint, run `npm.cmd test` to verify CRUD, validation and persistence.
-Local browser data is not automatically migrated to SQLite. Recreate test records after switching.
+To stop the server, press `Ctrl + C` in the terminal.
 
-## GitHub
-Commit source code and package-lock.json. Exclude node_modules, data and credentials.
-Describe your own project and add evidence of testing to this README before the final push.
+> Use the required Node.js version for the workshop. Check your installed version with `node --version`.
+
+## How It Works
+
+The application follows this request cycle:
+
+Browser HTML/CSS/JavaScript → Fetch and HTTP → Express API → SQLite database → JSON response → Updated browser interface.
+
+### Project files
+
+- `public/index.html` — Page structure and project form.
+- `public/style.css` — Styling and responsive layout.
+- `public/script.js` — Form handling, API requests, project rendering, and user feedback.
+- `server.js` — Starts the Express server.
+- `app.js` — API routes, validation, and responses.
+- `database.js` — SQLite database operations.
+- `data/projects.db` — Local database file created by the application.
+
+## API Endpoints
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/health` | Check server health |
+| GET | `/api/projects` | Retrieve all projects |
+| POST | `/api/projects` | Create a project |
+| PUT | `/api/projects/:id` | Update a project |
+| DELETE | `/api/projects/:id` | Delete a project |
+
+## Verification
+
+The following checks were performed during the workshop:
+
+- Created projects through the browser interface.
+- Edited a project while preserving its ID.
+- Cancelled and confirmed deletion.
+- Verified project data through the API and SQLite table.
+- Confirmed persistence after refreshing the browser and restarting the server.
+- Tested stopped-server error handling and recovery.
+- Checked input validation, keyboard focus, and a 390px-wide browser view.
+- Ran the automated API test with zero failures.
+
+The automated test checks server/API behavior using a temporary database. It does not replace browser testing.
+
+To run the automated test, if `test/crud.test.js` is present, use:
+
+```powershell
+npm.cmd test
+```
+
+## Workshop Limitations
+
+- This is a local educational application without sign-in or per-user permissions.
+- Browsers connecting to the same server share the same project collection.
+- The local SQLite database and `node_modules` should not be uploaded to GitHub.
+- Cloud hosting requires separate server and database configuration.
