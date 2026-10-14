@@ -1,38 +1,55 @@
-let projects = [];
-let nextId = 1;
+
+import { DatabaseSync } from 'node:sqlite';
+import { mkdirSync } from 'node:fs';
+
+mkdirSync('data', { recursive: true });
+
+const connection = new DatabaseSync(
+    process.env.DB_FILE || 'data/projects.db'
+);
+
+connection.exec(`
+    CREATE TABLE IF NOT EXISTS projects (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL
+            CHECK(length(trim(name)) BETWEEN 1 AND 80),
+        status TEXT NOT NULL
+            CHECK(status IN ('Planned', 'In Progress', 'Completed'))
+    )
+`);
 
 export const db = {
     async list() {
-        return projects;
+        return connection
+            .prepare('SELECT id, name, status FROM projects ORDER BY id DESC')
+            .all();
     },
 
-    async create(project) {
-        const row = {
-            id: nextId++,
-            ...project
-        };
-        projects.push(row);
-        return row;
+    async create({ name, status }) {
+        const result = connection
+            .prepare('INSERT INTO projects (name, status) VALUES (?, ?)')
+            .run(name, status);
+
+        return connection
+            .prepare('SELECT id, name, status FROM projects WHERE id = ?')
+            .get(Number(result.lastInsertRowid));
     },
 
-    async update(id, project) {
-        const index = projects.findIndex(p => p.id === id);
+    async update(id, { name, status }) {
+        const result = connection
+            .prepare('UPDATE projects SET name = ?, status = ? WHERE id = ?')
+            .run(name, status, id);
 
-        if (index < 0) {
-            return null;
-        }
+        if (!result.changes) return null;
 
-        projects[index] = {
-            id,
-            ...project
-        };
-
-        return projects[index];
+        return connection
+            .prepare('SELECT id, name, status FROM projects WHERE id = ?')
+            .get(id);
     },
 
     async remove(id) {
-        const found = projects.some(p => p.id === id);
-        projects = projects.filter(p => p.id !== id);
-        return found;
+        return connection
+            .prepare('DELETE FROM projects WHERE id = ?')
+            .run(id).changes > 0;
     }
 };
